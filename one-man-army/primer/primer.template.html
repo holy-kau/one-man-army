@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One Man Army</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500&family=Geist+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+/* VOICE premium minimal, the same night as the 21/4/27 site: few words, big type, a lot of dark air
+   IDEA a private briefing room where you raise an army: one question at a time, then your org chart appears
+   PICTURE the army chart: you at the top, your second in command, specialists in a row, drawn in fine teal lines
+   COLOUR near black #030a0f, smoke white ink, one accent (Mitraa teal, lifted for dark), navy only as depth
+   TYPE DM Sans for words, Geist Mono for numbers, labels and the chart
+   LAYOUT slim step rail; each step is one column of decisions with the chart beside it on laptop and above it on phone */
+:root{color-scheme:dark;--bg:#030a0f;--bg2:#07131b;--ink:#e9efef;--soft:#8b9ba3;--line:rgba(233,239,239,.10);--line2:rgba(233,239,239,.22);--acc:#3cc4c6;--navy:#0b2a5c;--warn:#ff8a7a;
+ --blue:var(--acc);--green:var(--acc);--red:var(--warn);--panel:var(--bg2);--chip:transparent;--frame:var(--line2)}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0}
+body{background:radial-gradient(60% 40% at 50% 0%,rgba(0,123,127,.12),transparent 70%) no-repeat,var(--bg);color:var(--ink);font:16.5px/1.6 "DM Sans",system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{line-height:1.05;letter-spacing:-.03em;text-wrap:balance;margin:0 0 .45em;font-weight:500}
+h1{font-size:clamp(44px,7vw,84px)}
+h2{font-size:clamp(30px,4vw,46px)}
+h3{font-size:19px;letter-spacing:-.01em}
+p{margin:0 0 .8em;max-width:60ch}
+a{color:var(--acc)}
+code{font-family:"Geist Mono",ui-monospace,monospace;font-size:.92em}
+.mono{font-family:"Geist Mono",ui-monospace,Menlo,monospace}
+.wrap{max-width:1160px;margin:0 auto;padding:0 max(5vw,18px)}
+header.top{padding:72px 0 0}
+.meta{font-family:"Geist Mono",monospace;font-size:13px;color:var(--soft);letter-spacing:.02em;margin:0 0 22px}
+.meta i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--acc);margin-right:10px;box-shadow:0 0 10px var(--acc)}
+.lead{color:var(--soft);font-size:19px;max-width:44ch}
+.lead b{color:var(--ink);font-weight:500}
+.rail{display:flex;gap:4px;overflow-x:auto;padding:0;margin:44px 0 0;list-style:none;border-bottom:1px solid var(--line)}
+.rail li{flex:none}
+.rail button{flex:none;white-space:nowrap;font:400 13px/1 "Geist Mono",monospace;color:var(--soft);background:none;border:0;border-bottom:1px solid transparent;margin-bottom:-1px;padding:14px 12px;min-height:44px;cursor:pointer}
+.rail button[aria-current=step]{color:var(--ink);border-bottom-color:var(--acc)}
+.rail button .n{margin-right:8px;color:var(--soft)}
+.rail button.done .n{color:var(--acc)}
+main{padding-top:44px;padding-bottom:72px}
+section.step{display:none}
+section.step.on{display:block;animation:fade .4s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}}
+@media(prefers-reduced-motion:reduce){section.step.on{animation:none}}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:56px;align-items:start}
+@media(max-width:900px){.grid2{grid-template-columns:minmax(0,1fr);gap:32px}}
+.sticky{position:sticky;top:24px}
+@media(max-width:900px){.sticky{position:static;order:-1}}
+.q{border:0;padding:0;margin:0 0 30px}
+.q legend{font-weight:500;font-size:18px;margin-bottom:10px;padding:0;letter-spacing:-.01em}
+.q .hint{color:var(--soft);font-size:14px;margin:-6px 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips label{position:relative}
+.chips input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.chips span{display:inline-flex;align-items:center;min-height:42px;padding:8px 16px;border:1px solid var(--line2);border-radius:999px;font-size:15px;color:var(--soft);transition:all .15s}
+.chips input:checked+span{border-color:var(--acc);color:var(--ink);background:rgba(60,196,198,.10)}
+.chips input:focus-visible+span{outline:2px solid var(--acc);outline-offset:2px}
+input[type=text],textarea,select{font:16px/1.4 "DM Sans",sans-serif;color:var(--ink);background:var(--bg2);border:1px solid var(--line2);border-radius:10px;padding:10px 12px;min-height:44px;width:100%}
+textarea{min-height:110px;resize:vertical;font-family:"Geist Mono",monospace;font-size:13px}
+select option{background:var(--bg2)}
+input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.btn{font:500 15px/1 "DM Sans",sans-serif;min-height:46px;padding:0 22px;border-radius:999px;border:1px solid var(--ink);background:var(--ink);color:var(--bg);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn:hover{background:var(--acc);border-color:var(--acc)}
+.btn.ghost{background:none;color:var(--ink);border-color:var(--line2)}
+.btn.ghost:hover{border-color:var(--ink)}
+.btn[disabled],.btn[aria-disabled=true]{opacity:.3;cursor:not-allowed;pointer-events:none}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:48px;padding-top:24px;border-top:1px solid var(--line)}
+.note{font-size:14px;color:var(--soft)}
+.panel{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:22px 24px}
+.privacy{font-family:"Geist Mono",monospace;font-size:13px;color:var(--soft);margin:0 0 34px;padding-left:14px;border-left:1px solid var(--acc)}
+.privacy b{color:var(--ink);font-weight:400}
+/* the army chart */
+.board{border:1px solid var(--line);border-radius:18px;padding:22px;background:linear-gradient(180deg,rgba(11,42,92,.25),transparent 70%);font-family:"Geist Mono",monospace}
+.board .bt{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:22px}
+.board .bt b{font-weight:400;font-size:13px;color:var(--acc);letter-spacing:.06em;text-transform:lowercase}
+.board .bt i{font-style:normal;color:var(--soft);font-size:12px}
+.tier{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;position:relative;padding-bottom:22px}
+.tier+.tier::before{content:"";position:absolute;top:-22px;left:50%;height:22px;border-left:1px solid var(--line2)}
+.card{border:1px solid var(--line2);border-radius:12px;padding:10px 12px;min-width:128px;max-width:210px;text-align:center;line-height:1.3;background:var(--bg)}
+.card .who{display:block;font-size:13px;color:var(--ink)}
+.card .what{display:block;font-size:11.5px;color:var(--soft);margin-top:2px}
+.card .tool{display:inline-block;margin-top:6px;font-size:11.5px;color:var(--acc)}
+.card.you{border-color:var(--ink)}
+.card.cos{border-color:var(--acc)}
+.card.later{border-style:dashed;opacity:.5}
+.side{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:4px}
+.notes{margin-top:16px;border-top:1px solid var(--line);padding-top:14px;display:flex;gap:12px;align-items:center}
+.notes svg{flex:none}
+.notes b{font-weight:400;font-size:13px}
+.notes span{font-size:11.5px;color:var(--soft);display:block}
+.yes{margin-top:10px;color:var(--soft);font-size:11.5px}
+.yes::first-letter{color:var(--acc)}
+.seg{display:inline-flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+.seg button{font:400 14px/1 "DM Sans",sans-serif;min-height:40px;padding:0 16px;border:1px solid var(--line2);border-radius:999px;background:none;color:var(--soft);cursor:pointer}
+.seg button[aria-pressed=true]{border-color:var(--acc);color:var(--ink);background:rgba(60,196,198,.10)}
+/* lessons */
+.lessons{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-top:28px}
+.lesson{padding:26px;background:var(--bg)}
+.lesson h3{display:flex;gap:12px;align-items:baseline;font-size:20px}
+.lesson h3 em{font-style:normal;font-family:"Geist Mono",monospace;color:var(--acc);font-size:13px}
+.lesson p{color:var(--soft);font-size:15px}
+.lesson .pic{color:var(--ink);font-size:15px}
+.try{border-top:1px solid var(--line);padding-top:14px;margin-top:14px;font-size:13.5px;color:var(--soft)}
+.try b{display:block;font:400 12px "Geist Mono",monospace;color:var(--acc);margin-bottom:6px}
+/* tools */
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.tabs button{font:400 14px/1 "DM Sans",sans-serif;min-height:40px;padding:0 16px;border:1px solid var(--line2);border-radius:999px;background:none;color:var(--soft);cursor:pointer}
+.tabs button[aria-selected=true]{border-color:var(--ink);color:var(--ink)}
+.pc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}
+@media(max-width:600px){.pc{grid-template-columns:minmax(0,1fr)}}
+.pc ul{margin:0;padding-left:18px;color:var(--soft);font-size:15px}.pc li{margin-bottom:8px}
+.pc h4{margin:0 0 10px;font:400 12px "Geist Mono",monospace;letter-spacing:.06em}
+.pro h4{color:var(--acc)}.con h4{color:var(--warn)}
+.fit{font-size:14px;margin-top:16px;color:var(--soft)}
+.fit b{color:var(--ink);font-weight:500}
+.assign{max-width:640px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 16px;align-items:center}
+.assign label{font-size:15px}
+@media(max-width:600px){.assign{grid-template-columns:minmax(0,1fr)}}
+/* checklist */
+ol.check{list-style:none;padding:0;margin:24px 0 0;counter-reset:s;max-width:760px}
+ol.check li{counter-increment:s;display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px;padding:18px 0;border-bottom:1px solid var(--line)}
+ol.check input{width:22px;height:22px;margin:3px 0 0 4px;accent-color:var(--acc)}
+ol.check h3{margin:0 0 4px;font-size:18px}
+ol.check h3::before{content:counter(s,decimal-leading-zero) "  ";font:400 12px "Geist Mono",monospace;color:var(--acc);vertical-align:3px}
+ol.check li.ticked h3{color:var(--soft);text-decoration:line-through}
+ol.check p{font-size:15px;margin:0;color:var(--soft)}
+.files{display:grid;gap:6px}
+.file{border:1px solid var(--line);border-radius:12px}
+.file summary{cursor:pointer;padding:12px 16px;font:400 13px "Geist Mono",monospace;min-height:44px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.file summary span{color:var(--soft)}
+pre{margin:0;padding:14px 16px;background:var(--bg2);font:12.5px/1.55 "Geist Mono",ui-monospace,Menlo,monospace;white-space:pre-wrap;overflow-wrap:anywhere;max-height:360px;overflow:auto;border-top:1px solid var(--line);color:#c9d4d6}
+.copy{font:400 12.5px/1 "Geist Mono",monospace;border:1px solid var(--line2);background:none;color:var(--ink);border-radius:999px;padding:9px 14px;min-height:36px;cursor:pointer}
+.copy:hover{border-color:var(--acc);color:var(--acc)}
+.consent{border:1px solid var(--line2);border-radius:16px;padding:22px 24px}
+.consent h3{font-size:18px}
+.consent ul{padding-left:18px;margin:0 0 12px;color:var(--soft);font-size:15px}
+.consent p{font-size:15px;color:var(--soft)}.consent p b{color:var(--ink);font-weight:500}
+.twocol{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+@media(max-width:760px){.twocol{grid-template-columns:minmax(0,1fr)}}
+.agree{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start;margin:14px 0;font-size:15px}
+.agree input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--acc)}
+.warn{color:var(--warn);font-size:13px;min-height:1.2em}
+.counts{width:100%;border-collapse:collapse;font-size:14px}
+.counts td,.counts th{border-bottom:1px solid var(--line);padding:8px 4px;text-align:left;font-weight:400}
+.counts th{font:400 12px "Geist Mono",monospace;color:var(--soft)}
+.counts td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.stack td:first-child{color:var(--soft);font-family:"Geist Mono",monospace;font-size:13px}
+@media(max-width:600px){.stack thead{display:none}.stack tr{display:grid;padding-block:8px}.stack td{border:0;padding:2px 0;text-align:left!important}}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font:400 13px "Geist Mono",monospace;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+@media(prefers-reduced-motion:reduce){.toast{transition:none}}
+body.compact header.top{padding-top:28px}body.compact .meta,body.compact .lead{display:none}body.compact h1{font-size:clamp(28px,3.4vw,38px);margin:0}body.compact .rail{margin-top:18px}
+footer{border-top:1px solid var(--line);padding:22px 0 44px;font-size:12.5px;color:var(--soft)}
+footer b{color:var(--ink);font-weight:500}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <p class="meta"><i></i>free · 30 min · works with any AI</p>
+    <h1>One Man Army</h1>
+    <p class="lead"><b>Don't start with the tools. Start with what you care about.</b> Then build agents that take the rest off your plate. Thirty minutes. They do the work. You keep the final say.</p>
+    <ol class="rail" id="rail"></ol>
+  </div>
+</header>
+<main class="wrap">
+
+<section class="step" id="s-about" data-title="About you">
+  <div style="max-width:680px">
+    <div class="privacy"><b>Everything you type stays in this browser.</b> Nothing is sent unless you choose to, at the end.</div>
+    <div class="panel" style="margin:18px 0 26px">
+      <h3 style="margin-top:0">Safety comes first. Always.</h3>
+      <p class="note" style="margin-top:4px">Speed is never worth a mistake you can't undo. Every agent in this kit follows five rules before anything else:</p>
+      <ol style="margin:10px 0 0 20px;line-height:1.6">
+        <li><b>You hold the pen.</b> Agents draft. Nothing is sent, posted, paid, booked or deleted without your yes.</li>
+        <li><b>Sensitive stays offline.</b> Money, IDs, passwords and anyone's medical details never go into an AI tool or a synced folder.</li>
+        <li><b>Links are suspect.</b> Agents never click links or open attachments in email, even from people you trust.</li>
+        <li><b>When in doubt, stop.</b> An agent that isn't sure asks you. It never guesses.</li>
+        <li><b>Least access.</b> Each agent sees only what its one job needs, and you can switch any of it off in a minute.</li>
+      </ol>
+      <p class="note" style="margin-top:10px">Modelled on the published privacy and trustworthy AI principles of the biggest names in tech: collect less, keep sensitive work on your own device, show you everything, lock it all down. Full rules in <code>guardrails.md</code>.</p>
+    </div>
+    <form id="qs" autocomplete="off"></form>
+    <p class="note">Examples are ticked. Make them yours.</p>
+  </div>
+</section>
+
+<section class="step" id="s-team" data-title="Your team">
+  <div style="max-width:720px">
+    <h2>Your army, in a world you already know.</h2>
+    <p id="frame" style="font-size:21px;margin-top:6px"></p>
+    <p class="note" id="worldWhy"></p>
+    <h3 style="margin-top:34px">Your starter team. One agent, one job.</h3>
+    <div id="starter" class="files" style="margin:14px 0 30px"></div>
+    <details class="file"><summary>The full dictionary <span>kit term → your world</span></summary><div style="padding:6px 16px 14px" id="amap"></div></details>
+    <p class="note" style="margin-top:22px">Another world click faster? Switch:</p>
+    <div class="seg" role="group" aria-label="Switch world" id="aseg"></div>
+  </div>
+</section>
+
+<section class="step" id="s-basics" data-title="The basics">
+  <h2>Twelve ideas. That is the game.</h2>
+  <p class="note">Read one. Paste the line into any AI. Watch it work.</p>
+  <div class="lessons" id="lessons"></div>
+</section>
+
+<section class="step" id="s-tools" data-title="Choose tools">
+  <h2>Pick your tools. Don't marry them.</h2>
+  <div class="panel" id="rec" style="margin-bottom:22px"></div>
+  <h3>Who runs on what</h3>
+  <p class="note">Matched from your answers. Overrule freely.</p>
+  <div class="assign" id="assign" style="margin-bottom:28px"></div>
+  <h3>Pros and cons, side by side</h3>
+  <p class="note">Checked 23 Nov 2026. These change monthly; check prices before you pay.</p>
+  <div class="tabs" role="tablist" id="ttabs"></div>
+  <div id="tpanel" class="panel"></div>
+  <h3 style="margin-top:40px">Give them hands: recommended MCPs</h3>
+  <p class="note">MCPs (Model Context Protocol) plug your agents into your apps. Picked from your answers. Add one at a time; the full guide is mcps.md in your kit.</p>
+  <div id="mcp" class="panel"></div>
+</section>
+
+<section class="step" id="s-setup" data-title="Set up">
+  <h2>Thirty minutes. Then it works for you.</h2>
+  <p id="setupLead" class="note"></p>
+  <ol class="check" id="check"></ol>
+  <div class="twocol" style="margin-top:48px;max-width:1000px">
+    <div class="panel"><h3>The 10 minute habit</h3><ol class="note" style="padding-left:18px;margin:0">
+      <li><b style="color:var(--ink);font-weight:500">Morning, 3 min.</b> Read the brief.</li>
+      <li><b style="color:var(--ink);font-weight:500">Morning, 2 min.</b> Answer the one decision it asks.</li>
+      <li><b style="color:var(--ink);font-weight:500">Midday, 3 min.</b> File one task with a three line brief.</li>
+      <li><b style="color:var(--ink);font-weight:500">Evening, 2 min.</b> “Check the outbox.” Yes, no, or redo.</li></ol></div>
+    <div class="panel"><h3>The 4 week ramp</h3><ol class="note" style="padding-left:18px;margin:0">
+      <li><b style="color:var(--ink);font-weight:500">Week 1.</b> Chief of Staff, reasoning agent, morning brief. Nothing else.</li>
+      <li><b style="color:var(--ink);font-weight:500">Week 2.</b> Add one specialist. Write every task as a brief.</li>
+      <li><b style="color:var(--ink);font-weight:500">Week 3.</b> Add the outbox checks and the Saturday digest.</li>
+      <li><b style="color:var(--ink);font-weight:500">Week 4.</b> First weekly review. Cut what you don't use.</li></ol></div>
+  </div>
+  <div class="panel" style="margin-top:20px;max-width:1000px"><h3>Rollback and approval</h3><p class="note" style="margin:0">Agents draft; you press send. Anything that can't be undone (send, pay, book, delete, post) waits for your yes. Nothing is deleted: finished work moves to a <code>done/</code> folder, and your drive keeps version history, so any change can be rolled back. Patient and client data never goes into cloud AI. A local redaction add-on is planned, not built.</p></div>
+</section>
+
+<section class="step" id="s-kit" data-title="Your army">
+  <h2>Your army is ready.</h2>
+  <div style="max-width:760px;margin:24px 0 48px"><div id="board3"></div></div>
+  <div class="grid2">
+    <div>
+      <h3 style="font-size:24px">Your kit. Built from your answers.</h3>
+      <p class="note">Download the zip, or copy any file. The folder is the asset; the tools are replaceable.</p>
+      <label class="panel row" style="margin-bottom:16px;align-items:flex-start;gap:12px"><input type="checkbox" id="optin" style="width:22px;height:22px;margin-top:3px"><span><b>Optional: switch on usage counts in my kit.</b><br><span class="note">Your agents will add one line per routine or task to a log in your own folder: date, type, role, tool, outcome. Never what it was about. Nothing is sent unless you choose to in the last step. Off by default; you can switch it off any time in AGENTS.md.</span></span></label>
+      <div class="row" style="margin-bottom:16px"><button class="btn" id="dl" type="button">Download my kit (.zip)</button><span class="note" id="dlnote"></span></div>
+      <div class="files" id="files"></div>
+    </div>
+    <div class="sticky">
+      <div class="panel">
+        <h3>Your first message to each agent</h3>
+        <p class="note">Paste the role card, then send this. A quick competence check.</p>
+        <div id="firsts"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="step" id="s-help" data-title="Help improve it">
+  <h2>Help build v2.</h2>
+  <p class="note">Optional. Free and early: share anonymous answers and weekly counts if you're willing. Saying no changes nothing.</p>
+  <div class="consent" id="consentBox">
+    <h3>What you would share, and what you never share</h3>
+    <div class="twocol">
+      <div>
+        <p><b>Collected only if you tick the box and press send:</b></p>
+        <ul>
+          <li>Your answers from step 1, as fixed choices (for example "healthcare", "phone and laptop", "Claude"), <b>not</b> your name. Age, sex and location are never sent.</li>
+          <li>Which tools you picked for which roles, and which picture you chose.</li>
+          <li>Each week, if you choose: counts of routines and tasks your agents ran, and a short check-in.</li>
+          <li>A random tester code (yours: <b id="tcode"></b>) so weeks can be linked without your name.</li>
+        </ul>
+      </div>
+      <div>
+        <p><b>Never collected:</b></p>
+        <ul>
+          <li>Your name, email, phone, timezone or location.</li>
+          <li>Any patient, client or other person's details.</li>
+          <li>What your tasks were about, or any message or file content.</li>
+          <li>Health details, money figures, passwords or account numbers.</li>
+        </ul>
+      </div>
+    </div>
+    <p><b>Where it goes:</b> a form in the kit author's Jotform account, which only he can open. It is used only to improve the kit, never sold, and deleted on request. Jotform also has its own privacy terms. <b>Be aware:</b> with only a handful of testers, he may be able to guess who sent what, which is why nothing you would mind him seeing is ever asked.</p>
+    <p><b>How to stop:</b> simply don't send. To remove what you sent, tell him your tester code and it will be deleted. Usage logging in your kit is switched off by one line in <code>AGENTS.md</code>.</p>
+  </div>
+
+  <div class="twocol" style="margin-top:24px">
+    <div class="panel">
+      <h3>1. Share my setup answers</h3>
+      <p class="note">Exactly this text will be sent. Nothing else.</p>
+      <pre id="setupPayload" style="border:0;border-radius:8px"></pre>
+      <label class="agree"><input type="checkbox" id="c1"><span>I have read what is collected and agree to share these answers.</span></label>
+      <div class="row"><a class="btn" id="send1" aria-disabled="true" href="#" target="_blank" rel="noopener">Open the form to send</a><button class="copy" type="button" data-copyfrom="setupPayload">Copy text</button></div>
+      <p class="note" id="f1note"></p>
+    </div>
+    <div class="panel">
+      <h3>2. Weekly check-in</h3>
+      <p class="note">Paste your <code>usage/</code> log lines here. They are counted in this browser; only the counts below are sent.</p>
+      <textarea id="logs" placeholder="2026-12-02 | morning-brief | chief-of-staff | gemini | done"></textarea>
+      <table class="counts" id="ctable"></table>
+      <form id="wq" style="margin-top:14px"></form>
+      <label for="wfree" style="font-weight:600">One thing to improve (optional)</label>
+      <p class="note" style="margin:2px 0 6px">No names, no patient or personal details.</p>
+      <input type="text" id="wfree" maxlength="200">
+      <p class="warn" id="wwarn"></p>
+      <pre id="weeklyPayload" style="border:0;border-radius:8px"></pre>
+      <label class="agree"><input type="checkbox" id="c2"><span>I agree to share this week's counts and check-in.</span></label>
+      <div class="row"><a class="btn" id="send2" aria-disabled="true" href="#" target="_blank" rel="noopener">Open the form to send</a><button class="copy" type="button" data-copyfrom="weeklyPayload">Copy text</button></div>
+      <p class="note" id="f2note"></p>
+    </div>
+  </div>
+  <div class="panel" id="hook" hidden style="margin-top:24px"><h3>If this gave you an hour back.</h3><p class="note">The thinking behind it lives in a quiet Telegram channel: kaushikilango musings. No noise.</p><a class="btn ghost" id="hookLink" href="#" target="_blank" rel="noopener">Join on Telegram</a></div>
+  <p class="note" style="margin-top:20px"><button class="copy" type="button" id="reset">Clear my answers from this browser</button></p>
+</section>
+
+<div class="nav" id="nav"><button class="btn ghost" type="button" id="prev">Back</button><button class="btn" type="button" id="next">Next</button></div>
+</main>
+<footer><div class="wrap">One Man Army kit v1 · free to share · not a clinical tool, not a medical device, not professional advice. Never put patient or client information into any AI tool outside your employer's approved systems. · <b>Built by Dr Kaushik Ilango</b></div></footer>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+{
+/* ---------- settings the kit owner fills in ---------- */
+const CONFIG = {
+  version: "oma-v1.0-2026-11-23",
+  telegram: "",  /* paste the kaushikilango musings Telegram link; the closing note stays hidden while empty */
+  setupForm:  { url: "https://form.jotform.com/263261972847064", dataEntry: "q2_textbox0", codeEntry: "q3_textbox1" },
+  weeklyForm: { url: "https://form.jotform.com/263261908418057", dataEntry: "q3_textbox1", codeEntry: "q4_textbox2" }
+};
+/* Jotform prefill uses each field's unique name, not its visible label: ?q2_textbox0=...&q3_textbox1=... */
+
+const KIT = /*KIT_JSON*/;
+
+/* ---------- data ---------- */
+const QS = [
+  {id:"role", t:"What do you do?", hint:"Pick the closest, or type it in your own words.", text:"roleText", ph:"e.g. GP, teacher, founder, nurse", type:"one", opts:[["health","Healthcare"],["uniformed","Military, police or uniformed"],["business","Business, finance or law"],["tech","Tech or engineering"],["education","Education or research"],["creative","Creative or media"],["student","Student"],["home","Home or caregiving"],["retired","Retired"],["other","Something else"]], def:""},
+  {id:"age", t:"Age", type:"one", opts:[["u25","Under 25"],["25","25 to 34"],["35","35 to 44"],["45","45 to 54"],["55","55+"]], def:"25"},
+  {id:"sex", t:"Sex", type:"one", opts:[["m","Male"],["f","Female"],["x","Prefer not to say"]], def:""},
+  {id:"locText", t:"Where are you based?", hint:"City or country. Age, sex and location only tailor your examples. They are never sent.", type:"text", ph:"e.g. Singapore", opts:[], def:""},
+  {id:"comfort", t:"How do you use AI right now?", type:"one", opts:[["never","I don't yet"],["few","I ask it questions now and then"],["weekly","I chat with it most days for work or study"],["daily","I've set up projects, GPTs or agents"]], def:"few"},
+  {id:"tools", t:"Which AI tools do you already use or pay for?", hint:"Pick all that apply.", type:"many", opts:[["chatgpt","ChatGPT"],["claude","Claude"],["gemini","Gemini"],["grok","Grok / Grok Bot"],["muse","Muse (Meta)"],["perplexity","Perplexity"],["copilot","Microsoft Copilot"],["deepseek","DeepSeek"],["other","Others"],["none","None yet"]], text:"toolsOther", ph:"Others: please specify", def:["chatgpt"]},
+  {id:"use", t:"What do you use AI for today?", type:"many", opts:[["questions","Quick questions"],["writing","Writing and emails"],["study","Studying"],["planning","Planning my week"],["research","Research"],["admin","Work admin"],["nothing","Nothing yet"]], def:["questions","writing"]},
+  {id:"devices", t:"Where would you mostly use it?", type:"one", opts:[["phone","Mostly my phone"],["both","Phone and laptop"],["laptop","Mostly a laptop"]], def:"both"},
+  {id:"eco", t:"Which accounts run your life?", hint:"Email, calendar and files.", type:"one", opts:[["google","Google (Gmail, Calendar, Drive)"],["microsoft","Microsoft (Outlook, OneDrive)"],["apple","Apple (iCloud)"],["mix","A mix, or not sure"]], def:"google"},
+  {id:"focus", t:"What would you most like taken off your plate?", hint:"Pick up to three.", type:"many", max:3, opts:[["schedule","My schedule or shifts"],["study","Study and learning"],["health","Exercise and sleep habits"],["life","Family, social and travel plans"],["research","Reading and research"],["writing","Emails and writing"],["admin","Home or business admin"]], def:["schedule","study"]},
+  {id:"needs", t:"What should your agents be able to do?", hint:"Pick any. This decides what we suggest you add.", type:"many", opts:[["twoway","Message me first, and chat back on my phone"],["auto","Run jobs on their own while I sleep"],["research","Research with sources I can check"],["writing","Careful writing and long documents"],["inbox","Work inside my email, calendar and files"],["private","Keep sensitive things fully offline"]], def:["twoway"]},
+  {id:"time", t:"How much time can you give the first setup?", type:"one", opts:[["15","15 minutes"],["60","About an hour"],["eve","An evening"]], def:"60"},
+  {id:"budget", t:"Budget for AI tools", type:"one", opts:[["free","Free only"],["one","One paid plan"],["two","Happy to pay for two"]], def:"one"},
+  {id:"tone", t:"How should your agents talk to you?", type:"one", opts:[["short","Short and direct"],["friendly","Friendly, like a mate"],["teacher","Like a teacher: explain why"],["formal","Formal and professional"]], def:"short"},
+  {id:"worry", t:"What worries you most?", type:"many", opts:[["privacy","Privacy"],["cost","Cost"],["mistakes","It making mistakes"],["technical","It being too technical"],["none","Nothing much"]], def:["privacy"]}
+];
+const TOOLS = {
+  claude:{n:"Claude", pro:["Strong at careful reasoning, long documents and writing. A natural medical officer (reasoning agent).","Projects keep instructions, files and memory together: one project per role.","Scheduled tasks run in the cloud even when your computer is asleep.","Can be set to always ask before using a connected app."], con:["Scheduled tasks and the agent workspace need a paid plan.","Fewer 'does it on its own' features than Grok Bot or Muse; you set things up deliberately.","Connecting your apps takes a little setup the first time."], fit:"Best as the reasoning agent and keeper of memory.", where:"a Project's instructions (one project per role)", sched:"a scheduled task", paid:"paid plan for schedules"},
+  chatgpt:{n:"ChatGPT", pro:["The most familiar app; many people already use it daily.","Projects, custom GPTs and scheduled tasks cover most roles.","Agent mode (ChatGPT Work) handles multi-step tasks across connected apps and files."], con:["Scheduled tasks and agent mode sit in paid tiers, and limits change often.","Long agent sessions can drift from instructions; keep tasks small.","Memory can blur roles if you use one chat for everything."], fit:"Good all-rounder, especially if you already use it.", where:"a Project's instructions, or a custom GPT per role", sched:"a scheduled task", paid:"paid plan for schedules"},
+  gemini:{n:"Gemini", pro:["Lives inside Google: Gmail, Drive, Calendar. Light setup if your life runs on Google.","Deep Research is a strong library (research desk), and can work over your Drive and Gmail if you connect them.","Gems save a role as a reusable assistant."], con:["Up to 10 active schedules at a time.","Scheduled answers are prepared ahead, so fast-changing information can be slightly old.","Be careful what you connect: a research desk does not need your whole inbox."], fit:"Best if you live in Google, and as the research desk.", where:"a Gem per role", sched:"a Schedule", paid:"free to start"},
+  grok:{n:"Grok Bot", pro:["Built for a team of named agents, each with a role and memory, working on a cloud computer while your laptop is closed.","Routines run on a schedule or when something happens; up to 50 per Bot.","Can use websites that have no proper connection, the way a person would.","You choose approvals per action: allow once, always, or deny."], con:["Paid only: comes with the X Subscription from its Premium tier upward.","Weekly usage allowance, so heavy weeks are hard to predict.","All your Bots share one computer and its logins. A separate Bot is not a security wall.","You cannot pick the underlying model, and the product is still changing fast."], fit:"Best as Chief of Staff and specialists, if you want things to run on their own.", where:"each Bot's role instructions", sched:"a routine on the Bot", paid:"paid only"},
+  muse:{n:"Muse (Meta)", pro:["Free to start, with a usage limit. On phone, desktop, Mac and inside WhatsApp: the easiest start if you are not technical.","Proactive: makes a plan, works in the background, comes back with suggestions.","Asks before important actions like sending email or buying, with allow once / always / deny.","Runs on its own secure virtual computer, with your data stored separately."], con:["New (Sept 2026); few people have tried it in a structured team like this.","Works best on your own device's files; sharing one folder with other tools needs thought.","Built to take actions, so set strict approvals from day one.","Check what you share with Meta, and switch off training on your data if you prefer."], fit:"Best for a phone-first, low-effort start.", where:"the first message of a chat, asking Muse to keep it as standing instructions", sched:"asking Muse to do it every day at that time", paid:"free to start"},
+  perplexity:{n:"Perplexity", pro:["Answers with sources you can click and check: a natural research desk.","Spaces keep a role's instructions and files together.","Can watch a topic and send you updates on a schedule, depending on your plan."], con:["Built for finding and summarising, not for running your day or your files.","Less suited to long multi-step agent work than Claude, ChatGPT or Grok Bot.","Check current plans and limits before relying on schedules."], fit:"Best as the research desk.", where:"a Space per role", sched:"a scheduled task or topic update, if your plan has one, or a calendar reminder", paid:"free to start"},
+  deepseek:{n:"DeepSeek", pro:["Strong reasoning at low or no cost.","Open models you can also run offline on a capable computer."], con:["Few built-in connectors or schedules in the app.","Check where your data is stored and processed before you paste anything personal."], fit:"A thinking partner on a budget; not a Chief of Staff.", where:"a saved prompt you paste at the start of each chat", sched:"a calendar reminder", paid:"free to start"},
+  copilot:{n:"Microsoft Copilot", pro:["Fits if your work or home life already runs on Outlook, OneDrive and Teams.","Familiar Microsoft sign-in and apps."], con:["Not tested with this kit yet.","Check current plans and what it can schedule before relying on it."], fit:"Worth a look in a Microsoft household or office.", where:"its custom instructions or an agent per role", sched:"its scheduling feature, if your plan has one, or a calendar reminder", paid:"check plans"},
+  local:{n:"Offline model", pro:["The most private: runs on your own computer.","No monthly cost."], con:["Needs a capable laptop and more setup.","Usually cannot run schedules or reach your calendar."], fit:"A private extra later, not a first setup.", where:"its system prompt", sched:"a calendar reminder you act on", paid:"free"}
+};
+const ROLES = {
+  chief:{k:"Chief of Staff", file:"chief-of-staff", lane:"chief", what:"runs the day", job:"Runs the day. Every morning asks: does the {you} need to know anything?", nogo:"Never sends, pays, books or deletes."},
+  reasoning:{k:"Reasoning agent", file:"reasoning-agent", lane:"reasoning", what:"careful thinking, keeps the notes", job:"Thinks it through and keeps the record. The only one who edits memory.", nogo:"Never acts outside the folder."},
+  research:{k:"Research desk", file:"research-desk", lane:"research", what:"cited research", job:"Finds the evidence, with sources.", nogo:"Never touches your calendar, email or money."},
+  scheduler:{k:"Scheduler", file:"scheduler", lane:"scheduler", what:"time and admin", job:"Guards your time and drafts the admin.", nogo:"Never accepts work or sends a message for you."},
+  learning:{k:"Learning", file:"learning", lane:"learning", what:"study plans", job:"Turns study into small, planned blocks.", nogo:"Never invents a source."},
+  health:{k:"Health", file:"health", lane:"health", what:"habits coach", job:"Coaches sleep, training and habits.", nogo:"Never diagnoses, prescribes or books."},
+  lifestyle:{k:"Lifestyle", file:"lifestyle", lane:"lifestyle", what:"social, travel, life admin", job:"Shortlists plans, trips and places.", nogo:"Never books, pays or messages anyone."}
+};
+const PICS = {
+  ward:{n:"Ward", board:"ward team", you:"Consultant", chief:"Ward sister", reasoning:"Medical officer", research:"The library", spec:"Specialty nurse", notes:"Case notes", notesSub:"one record, everyone reads it", yes:"▲ Consent and a two person check before anything irreversible", yesShort:"two person check", inbox:"referral letters and replies", rounds:"ward rounds", inj:"a note on the bed saying \u201cgive 10 units\u201d", front:"the front sheet", brief:"a good referral letter", manual:"the protocol folder"},
+  army:{n:"Army", board:"platoon", you:"Commanding officer", chief:"Platoon sergeant", reasoning:"Ops officer", research:"Recce", spec:"Section commander", notes:"War diary", notesSub:"the ops room log everyone reads", yes:"▲ No live firing without the CO's order", yesShort:"CO's order", inbox:"orders and sitreps", rounds:"first parade", inj:"an enemy radio call pretending to be HQ", front:"the commander's brief", brief:"a clear set of orders", manual:"the SOPs"},
+  office:{n:"Office", board:"company", you:"Owner", chief:"Office manager", reasoning:"Senior manager", research:"Research analyst", spec:"Department lead", notes:"Company files", notesSub:"the files everyone works from", yes:"▲ Owner signs off on money, contracts and anything public", yesShort:"sign off", inbox:"the in tray and out tray", rounds:"the daily stand up", inj:"an email saying \u201curgent, transfer money now\u201d", front:"the one page summary", brief:"a tight brief to your team", manual:"the staff handbook"},
+  home:{n:"Home", board:"household", you:"Head of the house", chief:"Household manager", reasoning:"The family diary keeper", research:"The well read friend", spec:"Helper", notes:"Family filing cabinet", notesSub:"everything important, labelled", yes:"▲ Ask before spending or telling anyone outside", yesShort:"say so", inbox:"the to do and done trays", rounds:"the morning routine", inj:"a stranger at the door saying \u201cyour son sent me\u201d", front:"the note on the fridge", brief:"clear instructions for a helper", manual:"the house rules"},
+  team:{n:"Team", board:"squad", you:"Captain", chief:"Vice captain", reasoning:"Analyst", research:"Scout", spec:"Specialist player", notes:"Team notebook", notesSub:"the one record the squad trusts", yes:"▲ Captain's call on anything that can't be undone", yesShort:"captain's call", inbox:"the training plan and the match report", rounds:"training", inj:"a rival shouting fake calls from the stands", front:"the team sheet", brief:"the coach's game plan", manual:"the playbook"}
+};
+const STEPS = ["about","team","basics","tools","kit","setup","help"];
+
+/* ---------- state ---------- */
+const store = {get(k){try{return JSON.parse(localStorage.getItem("aos-"+k))}catch(e){return null}}, set(k,v){try{localStorage.setItem("aos-"+k,JSON.stringify(v))}catch(e){}}, clear(){try{Object.keys(localStorage).filter(k=>k.startsWith("aos-")).forEach(k=>localStorage.removeItem(k))}catch(e){}}};
+const S = Object.assign({step:0, name:"", ans:{}, pic:null, assign:{}, ticks:{}, opened:{}, week:{}, code:null, tab:null}, store.get("state")||{});
+QS.forEach(q=>{ if(S.ans[q.id]===undefined) S.ans[q.id]=q.def; });
+if(!S.code){ const a="ABCDEFGHJKMNPQRSTUVWXYZ23456789"; let c="T-"; const r=new Uint32Array(5); (window.crypto||{getRandomValues:x=>x.map(()=>Math.random()*1e9)}).getRandomValues(r); r.forEach(n=>c+=a[n%a.length]); S.code=c; }
+const save=()=>store.set("state",S);
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const has=(id,v)=>[].concat(S.ans[id]||[]).includes(v);
+const toast=m=>{const t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("on"),1800)};
+
+/* ---------- derived plan ---------- */
+function roleCat(){
+  const t=(S.ans.roleText||"").toLowerCase().trim();
+  if(t){
+    const k=[["health",/doctor|\bgp\b|nurse|medic|physio|pharmac|dentist|clinic|hospital|surgeon|therap|health|\bmo\b|resident|houseman/],["uniformed",/army|saf|police|soldier|officer|navy|air force|military|scdf|uniform|regular/],["student",/student|undergrad|studying|school|uni\b|university|poly/],["retired",/retire/],["home",/home|parent|mum|mom|dad|carer|caregiver|housewife|homemaker/],["education",/teach|lecturer|professor|tutor|research|academic/],["tech",/engineer|developer|software|tech|data|it\b|coder|programmer/],["creative",/design|writer|artist|creator|media|film|photograph|music|content/],["business",/founder|business|finance|bank|lawyer|legal|consult|sales|marketing|manager|account|entrepreneur|ceo/]];
+    const m=k.find(([,re])=>re.test(t)); return m?m[0]:(S.ans.role||"other");
+  }
+  return S.ans.role||"";
+}
+function inSG(){ const t=(S.ans.locText||"").toLowerCase(); return /singapore|\bsg\b/.test(t) || (!t && /Singapore/.test(Intl.DateTimeFormat().resolvedOptions().timeZone||"")); }
+function inferWorld(){
+  const a=S.ans, r=roleCat();
+  if(r==="health") return ["ward","you work in healthcare"];
+  if(r==="uniformed") return ["army","you serve in uniform"];
+  if(a.sex==="m" && inSG() && a.age!=="u25" && !["home"].includes(r)) return ["army","most men in Singapore have done NS"];
+  if(a.sex==="m" && inSG() && a.age==="u25" && r!=="student") return ["army","most men in Singapore have done NS"];
+  if(r==="student") return ["team",a.age==="u25"?"most students have played in a team":"you're studying"];
+  if(["home"].includes(r)) return ["home","you run a home"];
+  if(r==="retired") return ["home","home is your base now"];
+  return ["office","you work with teams and managers"];
+}
+function autoPic(){ return inferWorld()[0]; }
+function pic(){ if(!S.worldSet) S.ans.world=autoPic(); return PICS[S.ans.world]||PICS.ward; }
+function lanes(){
+  const f=[].concat(S.ans.focus||[]); const L=["chief","reasoning"];
+  if(f.includes("research")||has("use","research")) L.push("research");
+  if(f.includes("schedule")) L.push("scheduler");
+  if(f.includes("study")) L.push("learning");
+  if(f.includes("health")) L.push("health");
+  if(f.includes("life")) L.push("lifestyle");
+  return L;
+}
+function dayOne(){ const L=lanes(); const spec=L.filter(l=>!["chief","reasoning"].includes(l)); const limit=(S.ans.time==="15"||S.ans.comfort==="never")?0:1; return ["chief","reasoning"].concat(spec.slice(0,limit)); }
+function merged(){ return S.ans.time==="15" && (S.ans.comfort==="never"||S.ans.comfort==="few"); }
+function suggest(){
+  let t=[].concat(S.ans.tools||[]).filter(x=>x!=="none"&&x!=="other"&&TOOLS[x]); const b=S.ans.budget;
+  if(b==="free") t=t.filter(x=>!["grok"].includes(x));
+  if(!t.length){ t=[ S.ans.devices==="phone"||S.ans.comfort==="never" ? (S.ans.eco==="google"?"gemini":"muse") : (S.ans.eco==="google"?"gemini":S.ans.eco==="microsoft"?"copilot":"claude") ]; }
+  const pick=(...pref)=>pref.find(p=>t.includes(p))||t[0];
+  const reasoning=pick("claude","chatgpt","gemini","copilot","deepseek","grok","muse","perplexity");
+  let chief=t.length>1 ? pick(S.ans.comfort==="daily"?"grok":"_", S.ans.eco==="google"?"gemini":"_", S.ans.devices==="phone"?"muse":"_", "grok","muse","gemini","chatgpt","claude","copilot") : reasoning;
+  if(b==="one") chief=reasoning;
+  const research=b==="one"?reasoning:pick("perplexity","gemini",reasoning);
+  const out={chief, reasoning, research};
+  ["scheduler","learning","health","lifestyle"].forEach(l=>out[l]=chief);
+  return out;
+}
+function plan(){ const s=suggest(); const a={}; Object.keys(ROLES).forEach(r=>a[r]=S.assign[r]||s[r]); return a; }
+function toolList(){ const p=plan(); return [...new Set(lanes().map(l=>p[l]))]; }
+function folderWord(){ return {google:"Google Drive",microsoft:"OneDrive",apple:"iCloud Drive"}[S.ans.eco]||"Google Drive or OneDrive"; }
+
+/* ---------- step rail ---------- */
+function rail(){
+  $("rail").innerHTML=STEPS.map((s,i)=>`<li><button type="button" data-go="${i}" ${i===S.step?'aria-current="step"':''} class="${i<S.step?'done':''}"><span class="n">${String(i+1).padStart(2,"0")}</span>${esc($("s-"+s).dataset.title)}</button></li>`).join("");
+  { const r=$("rail"), c=r.querySelector('[aria-current="step"]'); if(c) r.scrollLeft=c.parentElement.offsetLeft-r.clientWidth/2+c.offsetWidth/2; }
+}
+function go(i){
+  S.step=Math.max(0,Math.min(STEPS.length-1,i)); save();
+  STEPS.forEach((s,j)=>$("s-"+s).classList.toggle("on",j===S.step));
+  document.body.classList.toggle("compact",S.step>0);
+  $("prev").style.visibility=S.step?"visible":"hidden";
+  $("next").textContent=S.step===STEPS.length-1?"Back to start":"Next: "+$("s-"+STEPS[S.step+1>=STEPS.length?0:S.step+1]).dataset.title;
+  if(location.hash!=="#"+STEPS[S.step]) history.replaceState(null,"","#"+STEPS[S.step]);
+  render(); window.scrollTo({top:0});
+}
+
+/* ---------- questions ---------- */
+function renderQs(){
+  $("qs").innerHTML=`<div class="q"><label for="nm" style="font-weight:600;font-size:17px">Your first name <span class="note">(optional, only used inside your files, never sent)</span></label><input type="text" id="nm" value="${esc(S.name)}" maxlength="40" style="margin-top:8px"></div>`+
+  QS.map(q=>`<fieldset class="q"><legend>${esc(q.t)}</legend>${q.hint?`<p class="hint">${esc(q.hint)}</p>`:""}${q.type==="text"?`<input type="text" data-txt="${q.id}" value="${esc(S.ans[q.id]||"")}" maxlength="60" placeholder="${esc(q.ph||"")}" style="margin-top:8px">`:`<div class="chips">${q.opts.map(([v,l])=>`<label><input type="${q.type==="one"?"radio":"checkbox"}" name="${q.id}" value="${v}" ${has(q.id,v)?"checked":""}><span>${esc(l)}</span></label>`).join("")}</div>${q.text?`<input type="text" data-txt="${q.text}" value="${esc(S.ans[q.text]||"")}" maxlength="60" placeholder="${esc(q.ph||"")}" style="margin-top:10px">`:""}`}</fieldset>`).join("");
+}
+$("qs").addEventListener("input",e=>{
+  const el=e.target;
+  if(el.id==="nm"){ S.name=el.value.trim(); save(); return; }
+  if(el.dataset.txt){ S.ans[el.dataset.txt]=el.value.trim(); if(el.dataset.txt==="toolsOther"&&el.value.trim()&&!has("tools","other")){ S.ans.tools=[].concat(S.ans.tools||[]).filter(x=>x!=="none").concat("other"); document.querySelectorAll('input[name="tools"]').forEach(x=>x.checked=S.ans.tools.includes(x.value)); } S.assign={}; if(!S.worldSet) S.ans.world=autoPic(); save(); return; }
+  const q=QS.find(x=>x.id===el.name); if(!q) return;
+  if(q.type==="one") S.ans[q.id]=el.value;
+  else{
+    let v=[...document.querySelectorAll(`input[name="${q.id}"]:checked`)].map(x=>x.value);
+    const ex=["none","nothing"].find(x=>q.opts.some(o=>o[0]===x));
+    if(ex && el.value===ex && el.checked) v=[ex]; else if(ex) v=v.filter(x=>x!==ex);
+    if(q.max && v.length>q.max){ v=v.filter(x=>x!==el.value); el.checked=false; toast("Up to "+q.max+", please"); }
+    S.ans[q.id]=v; document.querySelectorAll(`input[name="${q.id}"]`).forEach(x=>x.checked=v.includes(x.value));
+  }
+  S.assign={}; if(!S.worldSet) S.ans.world=autoPic(); save();
+});
+
+/* ---------- the whiteboard ---------- */
+function board(id){
+  const P=pic(), p=plan(), L=lanes(), D=dayOne();
+  const card=(cls,who,what,tool,later)=>`<div class="card ${cls}${later?" later":""}"><span class="who">${esc(who)}</span><span class="what">${esc(what)}</span>${tool?`<span class="tool">${esc(TOOLS[tool].n)}</span>`:""}${later?`<span class="what">week 2</span>`:""}</div>`;
+  const specs=L.filter(l=>!["chief","reasoning","research"].includes(l));
+  const nm=S.name||"You";
+  $(id).innerHTML=`<div class="board" role="img" aria-label="Your army"><div class="bt"><b>your ${esc(P.board)}</b><i>${L.length} agents</i></div>
+   <div class="tier">${card("you",P.you,nm+" · final say")}</div>
+   <div class="tier">${card("cos",P.chief,merged()?"runs the day + thinks":"runs the day",p.chief)}</div>
+   ${specs.length?`<div class="tier">${specs.map(l=>card("",P.spec,ROLES[l].k.toLowerCase(),p[l],!D.includes(l))).join("")}</div>`:""}
+   <div class="side">${merged()?"":card("",P.reasoning,"keeps the record",p.reasoning)}${L.includes("research")?card("",P.research,"finds the evidence",p.research,!D.includes("research")):""}</div>
+   <div class="notes"><svg width="22" height="26" viewBox="0 0 34 40" aria-hidden="true"><rect x="3" y="4" width="28" height="34" rx="3" fill="none" stroke="#3cc4c6" stroke-width="2"/><path d="M9 14h16M9 21h16M9 28h10" stroke="#3cc4c6" stroke-width="2"/></svg><div><b>${esc(P.notes)}</b><span>${esc(P.notesSub)} · ${esc(folderWord())}</span></div></div>
+   <div class="yes">${esc(P.yes)}</div></div>`;
+}
+
+/* ---------- analogy map ---------- */
+function renderStarter(){
+  const P=pic(), p=plan(), D=dayOne(), lc=x=>x.charAt(0).toLowerCase()+x.slice(1);
+  const list=(merged()?["chief"]:D).concat(lanes().filter(l=>!D.includes(l)&&!["reasoning","research"].includes(l))).slice(0,merged()?3:5);
+  $("frame").textContent=`You're the ${lc(P.you)}. Your agents are your ${P.board}. A ${lc(P.chief)}, your chief of staff, runs them.`;
+  $("starter").innerHTML=list.map(r=>{const name=r==="chief"?P.chief:r==="reasoning"?P.reasoning:P.spec+" · "+ROLES[r].k.toLowerCase();
+    return `<div class="file" style="padding:14px 16px"><div class="row" style="justify-content:space-between"><b style="font-weight:500">${esc(name)}</b><span class="mono note">${esc(TOOLS[p[r]].n)}${D.includes(r)?"":" · week 2"}</span></div><p class="note" style="margin:6px 0 2px;color:var(--ink)">${esc(ROLES[r].job.replace("{you}",lc(P.you)))}</p><p class="note" style="margin:0"><span style="color:var(--warn)">no go</span> · ${esc(ROLES[r].nogo)}</p></div>`;}).join("");
+}
+function renderTeam(){
+  renderStarter();
+  const cur=S.ans.world||"ward";
+  $("aseg").innerHTML=Object.entries(PICS).map(([k,v])=>`<button type="button" data-pic="${k}" aria-pressed="${k===cur}">${v.n}</button>`).join("");
+  const P=pic();
+  const rows=[["you",P.you],["chief of staff",P.chief],["specialists",P.spec+", one job each"],["reasoning agent",P.reasoning+", keeps the record"],["research desk",P.research],["shared folder",P.notes],["memory.md",P.front],["inbox / outbox",P.inbox],["routines",P.rounds],["guardrails",P.yes.replace("▲ ","")]];
+  $("amap").innerHTML=`<table class="counts stack"><thead><tr><th>in the kit</th><th>in your world</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("")}</tbody></table>`;
+  $("worldWhy").textContent=S.worldSet?`Taught in the language of: ${PICS[S.ans.world].n.toLowerCase()}.`:`We\u2019ll teach this in the language of ${({ward:"a hospital ward",army:"the army",office:"an office",home:"a home",team:"a sports team"})[S.ans.world]}, because ${inferWorld()[1]}.`;
+}
+$("aseg").addEventListener("click",e=>{const b=e.target.closest("[data-pic]"); if(!b) return; S.ans.world=b.dataset.pic; S.worldSet=true; save(); renderTeam();});
+
+/* ---------- lessons ---------- */
+function renderLessons(){
+  const P=pic();
+  const lc=x=>x.charAt(0).toLowerCase()+x.slice(1);
+  const L=[
+    ["Chat vs agent","A chat answers and forgets. An agent takes a job, works the steps, reports back.",`Asking the ${lc(P.chief)} a question is chat. Handing over a job is an agent.`,"Act as my assistant. Job, not question: plan my next 3 evenings around one 90 minute focus block each. Ask what you need first."],
+    ["The model is the car","The model (ChatGPT, Claude, Gemini) is the car. Your setup is the driving. Learn to drive once and any car works; switch tools and keep your folder.","New models arrive every month. Your rules, files and routines don't need to.","In 5 lines: what would you need from me to act as my assistant in any AI app, not just this one?"],
+    ["Three pillars: context, tools, skills","Context is what it knows about you (your .md files). Tools are what it can reach and do (your apps). Skills are routines it follows the same way every time.",`Context is the notes, tools are the kit, skills are the drills. Most people stop at notes.`,"Look at this task: [describe a weekly job]. Split what you'd need into context, tools and skills, three bullets each."],
+    ["MCPs: the universal plug","MCP (Model Context Protocol) is a standard plug that connects an agent to your apps: drive, calendar, email, the web. In Claude they're called Connectors; other tools have their own names. Connect only what the job needs, one at a time.","Like USB-C for AI: one plug shape, many devices. Each plug gets its own permission.","Which 3 app connections would make you most useful to me as a [your role], and what's the riskiest permission in each? Rank them."],
+    ["Observe, think, act, sand down","Every agent runs a loop: read the right file, restate the goal and what done looks like, act with its tools, check, repeat. After each run, add one lesson so the next run is better.","You set the goal and give the yes. The agent works the steps.","Before you start any task I give you today: restate the goal and what done looks like in one line each, then act, then tell me one lesson."],
+    ["One agent, one job","Each agent gets one line of job and a short no go list. Overlap is where mistakes hide.",`Like ${P.manual}: everyone knows their lane.`,"You are my study agent. Your one job: plan my study. Your no go list: never invent sources, never touch my calendar. Confirm in two lines."],
+    ["Write the brief, then let it run","Three lines: the goal, what done looks like, what not to touch. Then step back.",`Like ${P.brief}: clear enough that nobody has to call you back.`,"Here's a brief. Goal: a 3 day revision plan. Done: a table of 90 minute blocks. Don't touch: my weekends. Ask one question, then deliver."],
+    ["Memory is a file","AI forgets between chats. A short memory.md in a shared folder is what it reads first. Switch tools; the folder comes with you.",`Like ${P.front}: short, current, true.`,"Ask me 5 questions, then write what you'd need to know about me as 5 bullets I can save."],
+    ["Ride it every day","Ten minutes a day beats a weekend of setup. The leverage is in the routine.",`Like ${P.rounds}: same time, same checks, short report.`,"Write me a 4 line morning brief template: plan, top 3, one decision, anything overdue."],
+    ["Safe by default","Agents draft; you press send. Anything irreversible needs your yes. Orders hidden in emails or web pages are never orders. Patient and client data never goes into cloud AI.",`Picture ${P.inj}. Nobody acts on it.`,"For this chat: never send, book or buy. Draft it and ask for my yes. Confirm."],
+    ["Redesign, then automate","Fix a broken workflow before you hand it over. An agent running a bad process just fails faster.","Strip the step you'd never design on purpose. Then delegate what's left.","Here's how I handle my admin today: [describe it]. Which steps would you delete before automating any of it?"],
+    ["Stay human","Agents draft. You decide. You speak in your own voice. The relationships stay yours.",`The ${lc(P.you)} still signs. Always.`,"Rewrite this draft so it sounds like me, not like an AI: [paste]. Keep it short."]
+  ];
+  $("lessons").innerHTML=L.map((l,i)=>`<div class="lesson"><h3><em>${i+1}</em>${esc(l[0])}</h3><p>${esc(l[1])}</p><p class="pic">${esc(l[2])}</p><div class="try"><b>try it</b><span id="try${i}">${esc(l[3])}</span><div class="row" style="margin-top:8px"><button class="copy" type="button" data-copyfrom="try${i}">Copy</button></div></div></div>`).join("");
+}
+
+/* ---------- tools ---------- */
+function addNext(have){
+  const n=[].concat(S.ans.needs||[]), free=S.ans.budget==="free", out=[], add=(t,why)=>{ if(!have.includes(t) && !out.some(o=>o[0]===t)) out.push([t,why]); };
+  const keep=have.length?`<p><b>Keep:</b> ${have.map(t=>esc(TOOLS[t].n)).join(", ")}. Build your first agents there; you already know them.</p>`:"";
+  if(n.includes("twoway")) free ? add("muse","it messages you and you reply in WhatsApp") : add("grok","agents that message you first and chat back, like a real team on your phone");
+  if(n.includes("auto")) free ? add("gemini","free scheduled jobs inside Google") : add(have.includes("chatgpt")?"chatgpt":"grok","jobs that run on a schedule while your laptop is closed");
+  if(n.includes("research")) add(S.ans.eco==="google"?"gemini":"perplexity","answers with sources you can click and check");
+  if(n.includes("writing")) add("claude","careful reasoning, long documents and writing in your voice");
+  if(n.includes("inbox")) add(S.ans.eco==="microsoft"?"copilot":S.ans.eco==="google"?"gemini":"claude","works inside the email, calendar and files you already use");
+  if(n.includes("private")) add("local","runs on your own computer; nothing leaves it");
+  const room=S.ans.budget==="two"?2:S.ans.budget==="one"&&!have.length?1:S.ans.budget==="free"?2:1;
+  const picks=out.slice(0,room);
+  if(!picks.length) return keep?`<hr>${keep}<p class="note">Nothing to add yet. Ride what you have for four weeks first.</p>`:"";
+  return `<hr>${keep}<p><b>Consider adding:</b></p><ul>${picks.map(([t,w])=>`<li><b>${esc(TOOLS[t].n)}</b>: ${esc(w)}.${TOOLS[t].paid?` <span class="note">(${esc(TOOLS[t].paid)})</span>`:""}</li>`).join("")}</ul><p class="note">Add one tool at a time, in week 2 or later, once the first agents work.</p>`;
+}
+function renderMcp(){
+  const e=S.ans.eco, n=[].concat(S.ans.needs||[]), f=[].concat(S.ans.focus||[]);
+  const drive={google:"Google Drive",microsoft:"OneDrive",apple:"a folder on your computer (iCloud has no standard connector yet)"}[e]||"Google Drive or OneDrive";
+  const cal={google:"Google Calendar",microsoft:"Outlook Calendar",apple:"your calendar app, if your tool supports it"}[e]||"your calendar";
+  const mail={google:"Gmail",microsoft:"Outlook mail"}[e]||"your email";
+  const rows=[[drive,"Holds the 2nd brain. Every agent reads its rules and memory here.","All agents","Folder only"],
+    [cal,"Morning brief, clash checks, protected blocks.","Chief of Staff","Ask before moving or deleting"]];
+  if(f.includes("research")||n.includes("research")) rows.push(["Web search (built in)","Answers with sources you can check.","Research desk","Read only"]);
+  if(n.includes("inbox")||f.includes("writing")||f.includes("admin")) rows.push([mail,"Summaries and drafts. You send.","Reasoning agent","Draft only; never open links or attachments"]);
+  if(n.includes("auto")||n.includes("twoway")) rows.push(["A browser agent","For websites with no connector.","One agent, on request","Ask every time"]);
+  if(n.includes("private")) rows.push(["A local model with folder access","Sensitive work that never leaves your computer.","Optional","Offline only"]);
+  rows.push(["A hub (Zapier or Composio)","One plug for many apps. Week 4 or later.","Later","Same rules as each app"]);
+  $("mcp").innerHTML=`<ol style="margin:0;padding-left:20px">${rows.map(r=>`<li style="margin-bottom:12px"><b>${esc(r[0])}</b>. ${esc(r[1])}<br><span class="note">${esc(r[2])} · ${esc(r[3])}</span></li>`).join("")}</ol><p class="note" style="margin-top:12px">In Claude: Connectors. In ChatGPT, Gemini, Grok Bot and Muse: their own apps or integrations menu. Names change; the rule doesn't: connect the fewest apps that do the job, and set send, book, pay and delete to ask every time. Never connect systems that hold patient or client records.</p>`;
+}
+function renderTools(){
+  const p=plan(), L=lanes(), list=toolList();
+  const why=[];
+  const have=[].concat(S.ans.tools||[]).filter(x=>TOOLS[x]);
+  if(have.length) why.push("you already use "+have.map(x=>TOOLS[x].n).join(", "));
+  else why.push("you are not using an AI tool yet, so we picked an easy, cheap start");
+  if(S.ans.budget==="one") why.push("one paid plan means one tool for everything");
+  if(S.ans.eco==="google") why.push("your life runs on Google");
+  if(S.ans.devices==="phone") why.push("you're mostly on your phone");
+  const free=S.ans.budget==="free" && list.some(t=>["claude","chatgpt"].includes(t));
+  $("rec").innerHTML=`<h3>Our suggestion: ${list.map(t=>esc(TOOLS[t].n)).join(" + ")}</h3><p>Because ${esc(why.join("; "))}.</p>${merged()?`<p>With 15 minutes and little AI mileage, start with <b>one agent</b> doing both jobs: Chief of Staff and reasoning agent. Split them once it earns it.</p>`:""}${free?`<p class="note">On free plans, Claude and ChatGPT may not run scheduled routines. Fine: fire the morning brief yourself from a calendar reminder.</p>`:""}<p class="note">A starting point, not a verdict. Every tool below can run this kit, and the folder moves with you if you switch.</p>${addNext(have)}`;
+  const opts=Object.keys(TOOLS);
+  $("assign").innerHTML=L.map(r=>`<label for="as-${r}">${esc(ROLES[r].k)}${dayOne().includes(r)?"":` <span class="note">(add later)</span>`}</label><select id="as-${r}" data-role="${r}">${opts.map(t=>`<option value="${t}" ${p[r]===t?"selected":""}>${esc(TOOLS[t].n)}</option>`).join("")}</select>`).join("");
+  const show=["grok","claude","chatgpt","gemini","muse","perplexity","copilot","deepseek","local"];
+  if(!S.tab) S.tab=list[0];
+  $("ttabs").innerHTML=show.map(t=>`<button type="button" role="tab" data-tab="${t}" aria-selected="${t===S.tab}">${esc(TOOLS[t].n)}</button>`).join("");
+  const T=TOOLS[S.tab];
+  $("tpanel").innerHTML=`<div class="pc"><div class="pro"><h4>Pros</h4><ul>${T.pro.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div><div class="con"><h4>Cons</h4><ul>${T.con.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div></div><p class="fit"><b>Fits:</b> ${esc(T.fit)} <b>Role cards go in:</b> ${esc(T.where)}. <b>Cost:</b> ${esc(T.paid)}.</p><p class="note">Doctors: none of these consumer tools is an approved system for patient information.</p>`;
+}
+$("assign").addEventListener("change",e=>{const r=e.target.dataset.role; if(!r) return; S.assign[r]=e.target.value; save(); renderTools();});
+$("ttabs").addEventListener("click",e=>{const b=e.target.closest("[data-tab]"); if(!b) return; S.tab=b.dataset.tab; save(); renderTools();});
+
+/* ---------- setup checklist ---------- */
+function steps(){
+  const p=plan(), D=dayOne(), P=pic(), fw=folderWord(), roles=merged()?["chief"]:D;
+  const toolsUsed=[...new Set(roles.map(r=>p[r]))];
+  const st=[];
+  st.push(["Unzip your kit","The zip from the last step. One folder, already filled in."]);
+  st.push(["Make the folder",`In ${fw}, create "One Man Army" and drop the kit in. Keep every file .md.`]);
+  st.push(["Write three aims","Two minutes in memory.md. No patient details, money or passwords."]);
+  toolsUsed.forEach(t=>{
+    const rs=roles.filter(r=>p[r]===t).map(r=>ROLES[r].k);
+    st.push([`Stand up ${rs.length>1?rs.slice(0,-1).join(", ")+" and "+rs.at(-1):rs[0]} in ${TOOLS[t].n}`,`Paste ${merged()&&rs.length===1?"the Chief of Staff and reasoning agent cards":"each card"} from agents/ into ${TOOLS[t].where}. Give it the folder${t==="muse"?" (or upload the key files)":""}.`]);
+  });
+  st.push(["Switch on \u201cask every time\u201d",`For sending, posting, buying, booking, deleting. Written rules plus a tool setting: your ${P.yesShort}.`]);
+  st.push(["Send the first message","It's in START-HERE.md. If an agent can't name its role and limits, fix that first."]);
+  st.push(["Get interviewed",`Say \u201cinterview me\u201d to your ${merged()?"agent":"reasoning agent"}. It asks one question at a time and fills context/me.md for you. No blank page.`]);
+  st.push(["Run the practice task",`Ask your ${merged()?"agent":"reasoning agent"} to answer the task in inbox/. A RESULT lands in outbox/. Then: \u201cCheck the outbox.\u201d One line back means it's alive.`]);
+  st.push(["Turn on one routine",`The 07:00 brief, as ${TOOLS[p.chief].sched}. One week. Nothing else yet.`]);
+  const later=lanes().filter(l=>!D.includes(l));
+  if(later.length) st.push(["Week 2: add one more",`${later.map(l=>ROLES[l].k).join(" or ")}. One at a time.`]);
+  return st;
+}
+function renderSetup(){
+  const P=pic();
+  $("setupLead").textContent=`${S.ans.time==="15"?"15":"30"} minutes, one sitting. Progress saves in this browser.`;
+  $("check").innerHTML=steps().map((s,i)=>`<li class="${S.ticks[i]?"ticked":""}"><input type="checkbox" id="ck${i}" data-ck="${i}" ${S.ticks[i]?"checked":""} aria-label="Done: ${esc(s[0])}"><div><h3>${esc(s[0])}</h3><p>${esc(s[1])}</p></div></li>`).join("");
+}
+$("check").addEventListener("change",e=>{const i=e.target.dataset.ck; if(i===undefined) return; S.ticks[i]=e.target.checked; save(); e.target.closest("li").classList.toggle("ticked",e.target.checked);});
+
+/* ---------- personalised files ---------- */
+const TONES={short:["calm, direct and short. No filler","Brief by default. Lead with the point."],friendly:["friendly and relaxed, like a mate who has your back","Friendly and plain. Short sentences, no jargon, a bit of warmth."],teacher:["patient and clear, like a good teacher: say what to do and briefly why","Teach as you go. Give the answer, then one line on why, in plain language."],formal:["formal, precise and professional","Formal and precise. Full sentences, no slang."]};
+function fill(text, role){
+  const p=plan(), P=pic(), L=lanes(), tz=(Intl.DateTimeFormat().resolvedOptions().timeZone)||"[YOUR_TIMEZONE]";
+  const roleLine={health:"Healthcare",uniformed:"Military, police or uniformed services",business:"Business, finance or law",tech:"Tech or engineering",education:"Education or research",creative:"Creative or media",student:"Student",home:"Home or caregiving",retired:"Retired",other:"[ROLE_LINE]"}[roleCat()]||"[ROLE_LINE]"; const roleOut=(S.ans.roleText&&!piiCheck(S.ans.roleText))?S.ans.roleText:roleLine;
+  const focus=[].concat(S.ans.focus).map(f=>QS.find(q=>q.id==="focus").opts.find(o=>o[0]===f)[1]);
+  text=text.split("\n").filter(line=>{const m=line.match(/<!--lane:(\w+)-->/); return !m||L.includes(m[1]);}).map(line=>{const m=line.match(/<!--lane:(\w+)-->/); return m?line.replace("[TOOL]",TOOLS[p[m[1]]].n).replace(/<!--lane:\w+-->/,""):line;}).join("\n");
+  const today=new Date().toISOString().slice(0,10);
+  const map={"[YOUR_NAME]":S.name||"[YOUR_NAME]","[YOUR_TIMEZONE]":tz,"[TONE]":TONES[S.ans.tone==="warm"?"teacher":S.ans.tone||"short"][0],"[TONE_LONG]":TONES[S.ans.tone==="warm"?"teacher":S.ans.tone||"short"][1],"[ROLE_LINE]":roleOut,"[ANALOGY]":P.n.toLowerCase(),"[TOOLS]":toolList().map(t=>TOOLS[t].n).join(", ")+", "+folderWord(),"[FOCUS]":focus.map(f=>"- "+f).join("\n"),"[INSTALL_DATE]":today,"[AGENTS_STANDING]":(merged()?["Chief of Staff (also reasoning agent)"]:dayOne().map(r=>ROLES[r].k)).join(", "),"[OFF]":S.week.optin?"ON":"OFF"};
+  if(role) map["[TOOL]"]=TOOLS[p[role]].n;
+  Object.entries(map).forEach(([k,v])=>{text=text.split(k).join(v);});
+  return text;
+}
+function startHere(){
+  const p=plan();
+  return `# START HERE\n\nYour personalised One Man Army kit, made ${new Date().toISOString().slice(0,10)}.\n\n## Your plan\n\n- Picture: ${pic().n.toLowerCase()} (see analogies.md)\n- Tools: ${toolList().map(t=>TOOLS[t].n).join(", ")}\n- Day one: ${(merged()?["Chief of Staff (playing reasoning agent too)"]:dayOne().map(r=>ROLES[r].k+" in "+TOOLS[p[r]].n)).join("; ")}\n- Later: ${lanes().filter(l=>!dayOne().includes(l)).map(r=>ROLES[r].k).join(", ")||"nothing yet"}\n- Folder: ${folderWord()}\n- Usage logging: ${S.week.optin?"ON":"OFF"} (change in AGENTS.md)\n\n## Steps\n\n${steps().map((s,i)=>`${i+1}. **${s[0]}.** ${s[1]}`).join("\n")}\n\n## First messages\n\n${firsts().map(f=>`**${f[0]}**\n\n> ${f[1]}`).join("\n\n")}\n\n## Never\n\nNo patient or client details, passwords, account numbers or money figures in any file or prompt.\n`;
+}
+function firsts(){
+  const roles=merged()?["chief"]:dayOne();
+  return roles.map(r=>[ROLES[r].k+" ("+TOOLS[plan()[r]].n+")",`Please read AGENTS.md, then guardrails.md, then memory.md in my One Man Army folder. In three lines, tell me your role, what you must never do, and who you report to. Then ask me one question to fill a gap in context/me.md.`]);
+}
+function kitFiles(){
+  const L=lanes(); const out=[["START-HERE.md",startHere()]];
+  Object.keys(KIT).sort().forEach(path=>{
+    const m=path.match(/^agents\/(.+)\.md$/);
+    if(m && m[1]!=="README"){ const role=Object.keys(ROLES).find(r=>ROLES[r].file===m[1]); if(!role||!L.includes(role)) return; out.push([path,fill(KIT[path],role)]); return; }
+    out.push([path,fill(KIT[path])]);
+  });
+  return out;
+}
+$("optin").addEventListener("change",e=>{S.week.optin=e.target.checked; save(); renderKit();});
+function renderKit(){
+  board("board3");
+  $("optin").checked=!!S.week.optin;
+  const F=kitFiles();
+  $("files").innerHTML=F.map(([p,t],i)=>`<details class="file"><summary>${esc(p)}<span>${Math.max(1,Math.round(t.length/1000))} KB</span></summary><div class="row" style="padding:0 14px 10px"><button class="copy" type="button" data-copyfrom="f${i}">Copy this file</button></div><pre id="f${i}">${esc(t)}</pre></details>`).join("");
+  $("firsts").innerHTML=firsts().map((f,i)=>`<p style="margin:12px 0 4px"><b>${esc(f[0])}</b></p><div class="try"><span id="fm${i}">${esc(f[1])}</span><div class="row" style="margin-top:8px"><button class="copy" type="button" data-copyfrom="fm${i}">Copy</button></div></div>`).join("");
+}
+
+/* ---------- zip (store method, no compression) ---------- */
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(b){let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=CRC[(c^b[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0}
+function makeZip(files){
+  const enc=new TextEncoder(), parts=[], central=[]; let off=0;
+  const d=new Date(), dt=((d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1)), dd=(((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate());
+  files.forEach(([name,text])=>{
+    const nb=enc.encode("one-man-army/"+name), db=enc.encode(text), c=crc32(db);
+    const h=new DataView(new ArrayBuffer(30));
+    h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(8,0,true);h.setUint16(10,dt,true);h.setUint16(12,dd,true);h.setUint32(14,c,true);h.setUint32(18,db.length,true);h.setUint32(22,db.length,true);h.setUint16(26,nb.length,true);h.setUint16(28,0,true);
+    parts.push(new Uint8Array(h.buffer),nb,db);
+    const ch=new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);ch.setUint16(10,0,true);ch.setUint16(12,dt,true);ch.setUint16(14,dd,true);ch.setUint32(16,c,true);ch.setUint32(20,db.length,true);ch.setUint32(24,db.length,true);ch.setUint16(28,nb.length,true);ch.setUint32(42,off,true);
+    central.push(new Uint8Array(ch.buffer),nb);
+    off+=30+nb.length+db.length;
+  });
+  const csize=central.reduce((a,b)=>a+b.length,0);
+  const e=new DataView(new ArrayBuffer(22));
+  e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,csize,true);e.setUint32(16,off,true);
+  return new Blob([...parts,...central,new Uint8Array(e.buffer)],{type:"application/zip"});
+}
+let downloads=null;
+if(window.claude&&window.claude.use){ window.claude.use("downloads").then(d=>{downloads=d}).catch(()=>{}); }
+$("dl").addEventListener("click",async()=>{
+  const blob=makeZip(kitFiles()), name="one-man-army-kit.zip";
+  if(downloads){ try{ await downloads.save({filename:name,data:blob}); $("dlnote").textContent="Saved."; }catch(err){ $("dlnote").textContent=err&&err.code==="declined"?"Download cancelled.":"Download isn't available here. Use the Copy buttons below."; } return; }
+  try{ const u=URL.createObjectURL(blob), a=document.createElement("a"); a.href=u; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),4000); $("dlnote").textContent="Downloading. If nothing happens, use the Copy buttons below."; }catch(e){ $("dlnote").textContent="Download isn't available here. Use the Copy buttons below."; }
+});
+
+/* ---------- feedback ---------- */
+const WQ=[
+  {id:"useful", t:"How useful was your team this week?", opts:[["1","1 Not at all"],["2","2"],["3","3"],["4","4"],["5","5 Very"]]},
+  {id:"saved", t:"Time it saved you", opts:[["0","None"],["lt1","Under 1 hour"],["1to3","1 to 3 hours"],["gt3","More than 3 hours"]]},
+  {id:"hard", t:"Hardest part", opts:[["setup","Setting up"],["files","The folder and files"],["routines","Routines"],["trust","Trusting it"],["time","Finding time"],["none","Nothing"]]},
+  {id:"still", t:"Are you still using it?", opts:[["yes","Yes"],["some","Some of it"],["stopped","Stopped"]]},
+  {id:"pay", t:"If this were a paid product with setup help, would you consider it?", opts:[["no","No"],["maybe","Maybe"],["yes","Yes"]]}
+];
+function setupPayload(){
+  const a=S.ans, p=plan(), L=lanes();
+  const kv={v:CONFIG.version, code:S.code, role:roleCat(), roleTyped:a.roleText?"yes":"no", comfort:a.comfort, tools:[].concat(a.tools).join("+"), use:[].concat(a.use).join("+"), devices:a.devices, eco:a.eco, focus:[].concat(a.focus).join("+"), needs:[].concat(a.needs||[]).join("+"), time:a.time, budget:a.budget, tone:a.tone, worry:[].concat(a.worry).join("+"), pic:S.ans.world, picAuto:S.worldSet?"no":"yes", lanes:L.join("+"), stack:L.map(r=>r+":"+p[r]).join("+"), changedTools:Object.keys(S.assign).length?"yes":"no", merged:merged()?"yes":"no", usageLog:S.week.optin?"on":"off", stepsTicked:Object.values(S.ticks).filter(Boolean).length+"/"+steps().length};
+  return Object.entries(kv).map(([k,v])=>k+"="+v).join("; ");
+}
+const TYPES=["morning-brief","outbox-report","weekly-digest","calendar-sync","inbox-sweep","memory-merge","weekly-review","usage-summary","task-schedule","task-learning","task-health","task-lifestyle","task-research","task-writing","task-other"];
+const RL=["chief-of-staff","reasoning-agent","research-desk","scheduler","learning","health","lifestyle"];
+const TL=["claude","chatgpt","gemini","grok-bot","muse","copilot","local","other"];
+const OC=["done","needs-approval","skipped","failed"];
+function countLogs(){
+  const since=new Date(Date.now()-7*864e5).toISOString().slice(0,10);
+  const c={type:{},tool:{},outcome:{},role:{}}; let n=0, bad=0;
+  ($("logs").value||"").split(/\r?\n/).forEach(line=>{
+    const f=line.split("|").map(x=>x.trim().toLowerCase()); if(f.length<5){ if(line.trim()&&!line.trim().startsWith("<!--")&&!line.trim().startsWith("#")) bad++; return; }
+    const [d,t,r,tl,o]=f; if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||!TYPES.includes(t)||!RL.includes(r)||!TL.includes(tl)||!OC.includes(o)){bad++;return;}
+    if(d<since) return; n++;
+    c.type[t]=(c.type[t]||0)+1; c.tool[tl]=(c.tool[tl]||0)+1; c.outcome[o]=(c.outcome[o]||0)+1; c.role[r]=(c.role[r]||0)+1;
+  });
+  return {c,n,bad};
+}
+function weeklyPayload(){
+  const {c,n}=countLogs(); const kv={v:CONFIG.version, code:S.code, week:new Date().toISOString().slice(0,10), runs:n};
+  ["type","role","tool","outcome"].forEach(g=>kv[g]=Object.entries(c[g]).map(([k,v])=>k+":"+v).join("+")||"none");
+  WQ.forEach(q=>kv[q.id]=S.week[q.id]||"");
+  const free=($("wfree").value||"").trim(); if(free && !piiCheck(free)) kv.improve=free.replace(/[;=]/g,",");
+  return Object.entries(kv).map(([k,v])=>k+"="+v).join("; ");
+}
+function piiCheck(s){
+  if(/[STFGM]\d{7}[A-Z]/i.test(s)) return "That looks like an ID number. Please remove it.";
+  if(/\d{6,}/.test(s.replace(/\s/g,""))) return "Please remove long numbers (phone, ID or account numbers).";
+  if(/@|https?:\/\//i.test(s)) return "Please remove email addresses and links.";
+  if(/\b(patient|bed\s*\d|ward\s*\d|mrn|nric)\b/i.test(s)) return "Please leave out anything about patients.";
+  return "";
+}
+function formLink(F,data){ if(!F.url||!F.dataEntry) return ""; const u=new URL(F.url); u.searchParams.set(F.dataEntry,data); if(F.codeEntry) u.searchParams.set(F.codeEntry,S.code); return u.toString(); }
+function renderHelp(){
+  if(CONFIG.telegram){ $("hook").hidden=false; $("hookLink").href=CONFIG.telegram; }
+  $("tcode").textContent=S.code;
+  const sp=setupPayload(); $("setupPayload").textContent=sp;
+  $("wq").innerHTML=WQ.map(q=>`<fieldset class="q" style="margin-bottom:14px"><legend style="font-size:15px">${esc(q.t)}</legend><div class="chips">${q.opts.map(([v,l])=>`<label><input type="radio" name="w-${q.id}" value="${v}" ${S.week[q.id]===v?"checked":""}><span>${esc(l)}</span></label>`).join("")}</div></fieldset>`).join("");
+  $("logs").value=S.week.logs||"";
+  updHelp();
+}
+function updHelp(){
+  const {c,n,bad}=countLogs();
+  const rows=Object.entries(c.type).sort((a,b)=>b[1]-a[1]);
+  $("ctable").innerHTML=`<thead><tr><th>Last 7 days</th><th>Runs</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r[0])}</td><td>${r[1]}</td></tr>`).join("")||`<tr><td class="note">No log lines yet</td><td>0</td></tr>`}<tr><td><b>Total</b>${bad?` <span class="note">(${bad} line${bad>1?"s":""} skipped, not in the kit format)</span>`:""}</td><td><b>${n}</b></td></tr></tbody>`;
+  const w=piiCheck($("wfree").value||""); $("wwarn").textContent=w;
+  const wp=weeklyPayload(); $("weeklyPayload").textContent=wp;
+  const sp=setupPayload(); $("setupPayload").textContent=sp;
+  const l1=formLink(CONFIG.setupForm,sp), l2=formLink(CONFIG.weeklyForm,wp);
+  const set=(a,ok,link,note,msg)=>{ a.setAttribute("aria-disabled",ok&&link?"false":"true"); a.href=ok&&link?link:"#"; $(note).textContent=link?msg:"The form isn't switched on yet. Nothing can be sent. You can copy the text if you've been asked to."; };
+  set($("send1"),$("c1").checked,l1,"f1note","The form opens in a new tab with this text filled in. Nothing is sent until you press Submit there.");
+  set($("send2"),$("c2").checked&&!w,l2,"f2note","The form opens with these counts filled in. Nothing is sent until you press Submit there.");
+}
+$("s-help").addEventListener("input",e=>{
+  if(e.target.name&&e.target.name.startsWith("w-")) S.week[e.target.name.slice(2)]=e.target.value;
+  if(e.target.id==="logs") S.week.logs=e.target.value;
+  save(); updHelp();
+});
+$("s-help").addEventListener("change",()=>updHelp());
+$("reset").addEventListener("click",()=>{ store.clear(); location.hash=""; location.reload(); });
+
+/* ---------- copy ---------- */
+document.addEventListener("click",async e=>{
+  const b=e.target.closest("[data-copyfrom]"); if(!b) return;
+  const t=$(b.dataset.copyfrom).textContent;
+  try{ await navigator.clipboard.writeText(t); toast("Copied"); }
+  catch(err){ const r=document.createRange(); r.selectNodeContents($(b.dataset.copyfrom)); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast("Selected. Press Ctrl+C or ⌘C"); }
+});
+$("rail").addEventListener("click",e=>{const b=e.target.closest("[data-go]"); if(b) go(+b.dataset.go);});
+$("prev").addEventListener("click",()=>go(S.step-1));
+$("next").addEventListener("click",()=>go(S.step===STEPS.length-1?0:S.step+1));
+window.addEventListener("hashchange",()=>{const i=STEPS.indexOf(location.hash.slice(1)); if(i>=0&&i!==S.step) go(i);});
+
+/* ---------- render ---------- */
+function render(){
+  rail();
+  const s=STEPS[S.step];
+  if(s==="about"){ renderQs(); }
+  if(s==="team") renderTeam();
+  if(s==="basics") renderLessons();
+  if(s==="tools"){ renderTools(); renderMcp(); }
+  if(s==="setup") renderSetup();
+  if(s==="kit") renderKit();
+  if(s==="help") renderHelp();
+}
+const h=STEPS.indexOf(location.hash.slice(1));
+go(h>=0?h:S.step);
+}
+</script>
+</body>
+</html>
