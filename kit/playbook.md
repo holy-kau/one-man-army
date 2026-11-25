@@ -66,4 +66,4 @@ Agents draft. You decide. You speak in your own voice. The relationships, the ju
 
 ---
 
-**Built by Dr Kaushik Ilango**
+**Built by kaushik.md**

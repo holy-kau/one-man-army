@@ -102,4 +102,4 @@ Use this kit for your own life, study, scheduling and admin. Keep clinical work 
 
 One Man Army kit v1 · free to share · not a clinical tool, not a medical device, not professional advice. Never put patient or client information into any AI tool outside your employer's approved systems.
 
-**Built by Dr Kaushik Ilango**
+**Built by kaushik.md**
